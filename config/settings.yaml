@@ -5,10 +5,13 @@
 service:
   name: "data-processing"
 
+logging:
+  dir: "logs"
+  level: "INFO"
+
 api:
   host: "127.0.0.1"
   port: 8000
-  # Omit `title` to default to "<service.name> control".
   version: "0.1.0"
 
 units:

@@ -12,7 +12,7 @@ import yaml
 
 from api.control import build_app
 from core.base_unit import BaseUnit
-from core.logging_setup import configure_supervisor_logging
+from core.logging_setup import apply_logging_config, configure_supervisor_logging
 from core.registry import resolve
 from core.supervisor import Supervisor
 
@@ -40,8 +40,11 @@ def build_units(
 
 
 def main() -> int:
-    configure_supervisor_logging()
+    # Load config FIRST so logging settings in YAML can shape where
+    # supervisor.log is written and at what level.
     config = load_config()
+    apply_logging_config(config.get("logging"))
+    configure_supervisor_logging()
 
     service_cfg = config.get("service") or {}
     service_name = service_cfg.get("name", "service")
