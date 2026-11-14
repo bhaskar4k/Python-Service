@@ -1,4 +1,5 @@
 # Which units to run, and the parameters each one gets.
+# Each unit is independent - no messaging between them.
 # Add a new unit by registering it in core/registry.py and adding a section here.
 
 api:
@@ -6,16 +7,22 @@ api:
   port: 8000
 
 units:
-  order_sync:
+  ingestion:
     enabled: true
-    # Messages produced by this unit go to the "orders" topic.
-    produces: ["orders"]
     cfg:
-      interval_seconds: 2.0
+      interval_seconds: 3.0
 
-  report_gen:
+  pre_processing:
     enabled: true
-    # This unit reads from the "orders" topic.
-    consumes: ["orders"]
     cfg:
-      summary_interval_seconds: 10.0
+      interval_seconds: 4.0
+
+  processing:
+    enabled: true
+    cfg:
+      interval_seconds: 5.0
+
+  post_processing:
+    enabled: true
+    cfg:
+      interval_seconds: 6.0

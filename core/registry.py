@@ -8,8 +8,10 @@ from core.base_unit import BaseUnit
 # Maps unit name -> "module.path:ClassName".
 # Adding a new unit means adding one line here and a section in settings.yaml.
 UNIT_PATHS: dict[str, str] = {
-    "order_sync": "units.order_sync.unit:OrderSyncUnit",
-    "report_gen": "units.report_gen.unit:ReportGenUnit",
+    "ingestion":       "units.ingestion.unit:IngestionUnit",
+    "pre_processing":  "units.pre_processing.unit:PreProcessingUnit",
+    "processing":      "units.processing.unit:ProcessingUnit",
+    "post_processing": "units.post_processing.unit:PostProcessingUnit",
 }
 
 

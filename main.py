@@ -4,16 +4,15 @@ import logging
 import multiprocessing as mp
 import signal
 import sys
-import threading
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping, Type
 
 import uvicorn
 import yaml
 
 from api.control import build_app
+from core.base_unit import BaseUnit
 from core.logging_setup import configure_supervisor_logging
-from core.messaging import QueueBus
 from core.registry import resolve
 from core.supervisor import Supervisor
 
@@ -27,26 +26,15 @@ def load_config(path: Path = CONFIG_PATH) -> dict[str, Any]:
 
 
 def build_units(
-    config: dict[str, Any], bus: QueueBus
-) -> dict[str, tuple[type, dict[str, Any]]]:
-    """Resolve enabled units from config and wire their queues.
-
-    Each unit's cfg gets ``in_queue``/``out_queue`` references when it
-    declares ``consumes``/``produces`` topics, so units can talk through
-    the shared bus without knowing about each other.
-    """
-    units: dict[str, tuple[type, dict[str, Any]]] = {}
+    config: dict[str, Any],
+) -> dict[str, tuple[Type[BaseUnit], Mapping[str, Any]]]:
+    """Resolve enabled units from config. Units are independent of each other."""
+    units: dict[str, tuple[Type[BaseUnit], Mapping[str, Any]]] = {}
     for name, entry in (config.get("units") or {}).items():
         if not entry.get("enabled", True):
             continue
         cls = resolve(name)
-        cfg = dict(entry.get("cfg") or {})
-        produces = entry.get("produces") or []
-        consumes = entry.get("consumes") or []
-        if produces:
-            cfg["out_queue"] = bus.topic(produces[0])
-        if consumes:
-            cfg["in_queue"] = bus.topic(consumes[0])
+        cfg: Mapping[str, Any] = dict(entry.get("cfg") or {})
         units[name] = (cls, cfg)
     return units
 
@@ -54,8 +42,7 @@ def build_units(
 def main() -> int:
     configure_supervisor_logging()
     config = load_config()
-    bus = QueueBus()
-    units = build_units(config, bus)
+    units = build_units(config)
     if not units:
         log.error("no units enabled in %s; exiting", CONFIG_PATH)
         return 1
@@ -92,4 +79,3 @@ if __name__ == "__main__":
     # ``spawn`` is required on Windows and keeps Linux/macOS behavior identical.
     mp.set_start_method("spawn", force=True)
     sys.exit(main())
-
