@@ -42,6 +42,11 @@ def build_units(
 def main() -> int:
     configure_supervisor_logging()
     config = load_config()
+
+    service_cfg = config.get("service") or {}
+    service_name = service_cfg.get("name", "service")
+    log.info("starting %s", service_name)
+
     units = build_units(config)
     if not units:
         log.error("no units enabled in %s; exiting", CONFIG_PATH)
@@ -53,7 +58,7 @@ def main() -> int:
     api_cfg = config.get("api") or {}
     app = build_app(
         supervisor,
-        title=api_cfg.get("title", "my_service control"),
+        title=api_cfg.get("title") or f"{service_name} control",
         version=str(api_cfg.get("version", "0.1.0")),
     )
     server_config = uvicorn.Config(

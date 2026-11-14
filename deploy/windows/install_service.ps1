@@ -1,11 +1,11 @@
-# Install my_service as a Windows Service using NSSM.
+# Install data-processing as a Windows Service using NSSM.
 # Usage (run in an elevated PowerShell):
-#   .\install_service.ps1 -AppDir "C:\Services\my_service" -Nssm "C:\tools\nssm.exe"
+#   .\install_service.ps1 -AppDir "C:\Services\data-processing" -Nssm "C:\tools\nssm.exe"
 param(
-    [string]$ServiceName = "my_service",
+    [string]$ServiceName = "data-processing",
     [Parameter(Mandatory = $true)][string]$AppDir,
     [string]$Nssm = "nssm.exe",
-    [string]$LogDir = "$env:ProgramData\my_service\logs"
+    [string]$LogDir = "$env:ProgramData\data-processing\logs"
 )
 
 $ErrorActionPreference = "Stop"
@@ -33,7 +33,7 @@ try { & $Nssm remove   $ServiceName confirm | Out-Null } catch {}
 
 & $Nssm install $ServiceName $python $main
 & $Nssm set $ServiceName AppDirectory $AppDir
-& $Nssm set $ServiceName AppEnvironmentExtra "PYTHONUNBUFFERED=1" "MY_SERVICE_LOG_DIR=$LogDir"
+& $Nssm set $ServiceName AppEnvironmentExtra "PYTHONUNBUFFERED=1" "SERVICE_LOG_DIR=$LogDir"
 & $Nssm set $ServiceName AppStdout (Join-Path $LogDir "service.out.log")
 & $Nssm set $ServiceName AppStderr (Join-Path $LogDir "service.err.log")
 & $Nssm set $ServiceName AppRotateFiles 1

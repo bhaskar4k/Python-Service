@@ -1,5 +1,5 @@
 param(
-    [string]$ServiceName = "my_service",
+    [string]$ServiceName = "data-processing",
     [string]$Nssm = "nssm.exe"
 )
 $ErrorActionPreference = "Continue"

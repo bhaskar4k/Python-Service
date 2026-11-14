@@ -2,10 +2,13 @@
 # Each unit is independent - no messaging between them.
 # Add a new unit by registering it in core/registry.py and adding a section here.
 
+service:
+  name: "data-processing"
+
 api:
   host: "127.0.0.1"
   port: 8000
-  title: "my_service control"
+  # Omit `title` to default to "<service.name> control".
   version: "0.1.0"
 
 units:

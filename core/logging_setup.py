@@ -5,8 +5,8 @@ import logging.handlers
 import os
 from pathlib import Path
 
-LOG_DIR = Path(os.environ.get("MY_SERVICE_LOG_DIR", "logs"))
-LOG_LEVEL = os.environ.get("MY_SERVICE_LOG_LEVEL", "INFO").upper()
+LOG_DIR = Path(os.environ.get("SERVICE_LOG_DIR", "logs"))
+LOG_LEVEL = os.environ.get("SERVICE_LOG_LEVEL", "INFO").upper()
 
 _FMT = "%(asctime)s %(levelname)-7s %(name)s [pid=%(process)d] %(message)s"
 
