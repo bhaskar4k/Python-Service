@@ -1,0 +1,3 @@
+# Reserved for future use. core/logging_setup.py currently reads env vars:
+#   MY_SERVICE_LOG_DIR   (default: "logs")
+#   MY_SERVICE_LOG_LEVEL (default: "INFO")
