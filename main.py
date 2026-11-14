@@ -92,3 +92,4 @@ if __name__ == "__main__":
     # ``spawn`` is required on Windows and keeps Linux/macOS behavior identical.
     mp.set_start_method("spawn", force=True)
     sys.exit(main())
+
