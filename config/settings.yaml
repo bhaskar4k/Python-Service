@@ -8,6 +8,7 @@ service:
 logging:
   dir: "logs"
   level: "INFO"
+  console: true   # also print log lines to the terminal; the Windows service turns this off
 
 api:
   host: "127.0.0.1"

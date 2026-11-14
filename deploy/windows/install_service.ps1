@@ -33,7 +33,9 @@ try { & $Nssm remove   $ServiceName confirm | Out-Null } catch {}
 
 & $Nssm install $ServiceName $python $main
 & $Nssm set $ServiceName AppDirectory $AppDir
-& $Nssm set $ServiceName AppEnvironmentExtra "PYTHONUNBUFFERED=1" "SERVICE_LOG_DIR=$LogDir"
+# SERVICE_LOG_CONSOLE=0: NSSM already captures stderr into service.err.log,
+# so console logging would only duplicate every line there.
+& $Nssm set $ServiceName AppEnvironmentExtra "PYTHONUNBUFFERED=1" "SERVICE_LOG_DIR=$LogDir" "SERVICE_LOG_CONSOLE=0"
 & $Nssm set $ServiceName AppStdout (Join-Path $LogDir "service.out.log")
 & $Nssm set $ServiceName AppStderr (Join-Path $LogDir "service.err.log")
 & $Nssm set $ServiceName AppRotateFiles 1
@@ -41,6 +43,9 @@ try { & $Nssm remove   $ServiceName confirm | Out-Null } catch {}
 & $Nssm set $ServiceName Start SERVICE_AUTO_START
 & $Nssm set $ServiceName AppExit Default Restart
 & $Nssm set $ServiceName AppRestartDelay 5000
+# Wait up to 30 s after Ctrl+C before force-killing (NSSM default is 1.5 s),
+# so every unit gets to run teardown(). Matches TimeoutStopSec on Linux.
+& $Nssm set $ServiceName AppStopMethodConsole 30000
 
 & $Nssm start $ServiceName
 & $Nssm status $ServiceName

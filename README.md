@@ -121,6 +121,7 @@ service:
 logging:
   dir: "logs"                  # relative paths resolve to the working dir
   level: "INFO"                # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  console: true                # also print log lines to the terminal
 
 api:
   host: "127.0.0.1"
@@ -157,9 +158,12 @@ units:
 |---------------------|----------------------|-----------------------------|
 | `SERVICE_LOG_DIR`   | `logs`               | Where log files are written |
 | `SERVICE_LOG_LEVEL` | `INFO`               | Root log level              |
+| `SERVICE_LOG_CONSOLE` | `true`             | Also print log lines to the console (`0` / `false` turns it off) |
 
 The deploy scripts set these per-machine so systemd / NSSM can route logs
-into system directories without touching YAML.
+into system directories without touching YAML. The Windows service sets
+`SERVICE_LOG_CONSOLE=0` so log lines aren't duplicated into NSSM's
+`service.err.log`.
 
 ## Add a new unit
 
