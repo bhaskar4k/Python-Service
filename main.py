@@ -51,7 +51,11 @@ def main() -> int:
     supervisor.start()
 
     api_cfg = config.get("api") or {}
-    app = build_app(supervisor)
+    app = build_app(
+        supervisor,
+        title=api_cfg.get("title", "my_service control"),
+        version=str(api_cfg.get("version", "0.1.0")),
+    )
     server_config = uvicorn.Config(
         app,
         host=api_cfg.get("host", "127.0.0.1"),

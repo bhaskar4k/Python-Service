@@ -9,8 +9,8 @@ if TYPE_CHECKING:
     from core.supervisor import Supervisor
 
 
-def build_app(supervisor: "Supervisor") -> FastAPI:
-    app = FastAPI(title="my_service control", version="0.1.0")
+def build_app(supervisor: "Supervisor", title: str, version: str) -> FastAPI:
+    app = FastAPI(title=title, version=version)
 
     @app.get("/health")
     def health() -> dict:
