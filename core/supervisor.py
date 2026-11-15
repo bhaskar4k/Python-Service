@@ -60,6 +60,7 @@ class UnitStatus:
     restarts: int
     last_start: float
     exitcode: int | None = None
+    stopped: bool = False
 
 
 class Supervisor:
@@ -79,6 +80,8 @@ class Supervisor:
         }
         self._procs: dict[str, mp.Process] = {}
         self._stop_events: dict[str, EventType] = {}
+        # Units stopped through the API; the watch loop doesn't restart these.
+        self._stopped: set[str] = set()
         self._global_stop: EventType = mp.Event()
         self._lock = threading.RLock()
         self._loop_thread: threading.Thread | None = None
@@ -127,6 +130,7 @@ class Supervisor:
                         restarts=spec.restarts,
                         last_start=spec.last_start,
                         exitcode=p.exitcode if p and not p.is_alive() else None,
+                        stopped=name in self._stopped,
                     )
                 )
             return out
@@ -135,6 +139,7 @@ class Supervisor:
         with self._lock:
             if name not in self._specs:
                 return False
+            self._stopped.add(name)
             ev = self._stop_events.get(name)
             if ev:
                 ev.set()
@@ -147,12 +152,14 @@ class Supervisor:
         with self._lock:
             self._procs.pop(name, None)
             self._stop_events.pop(name, None)
+        log.info("stopped unit %s; it stays stopped until started again", name)
         return True
 
     def start_unit(self, name: str) -> bool:
         with self._lock:
             if name not in self._specs:
                 return False
+            self._stopped.discard(name)
             if name in self._procs and self._procs[name].is_alive():
                 return True
             self._specs[name].backoff_until = 0.0
@@ -197,6 +204,8 @@ class Supervisor:
                 for name in dead:
                     p = self._procs.pop(name)
                     self._stop_events.pop(name, None)
+                    if name in self._stopped:
+                        continue
                     spec = self._specs[name]
                     spec.restarts += 1
                     delay = min(self.BACKOFF_MAX, self.BACKOFF_BASE ** min(spec.restarts, 6))
@@ -206,7 +215,7 @@ class Supervisor:
                         name, p.exitcode, delay, spec.restarts,
                     )
                 for name in self._specs:
-                    if name not in self._procs:
+                    if name not in self._procs and name not in self._stopped:
                         self._start_unit(name)  # respects backoff_until
             if self._global_stop.wait(self.POLL_INTERVAL):
                 return

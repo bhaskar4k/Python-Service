@@ -69,3 +69,24 @@ def test_supervisor_restarts_crashed_unit(tmp_path):
         assert statuses[0].alive is True
     finally:
         sup.shutdown()
+
+
+def test_stopped_unit_stays_stopped_until_started(tmp_path):
+    mp.set_start_method("spawn", force=True)
+    sup = Supervisor({"tick": (_TickUnit, {})})
+    sup.POLL_INTERVAL = 0.2
+    sup.start()
+    try:
+        assert sup.stop_unit("tick")
+        time.sleep(1.5)  # several watch-loop passes, any of which used to restart it
+        status = sup.list_units()[0]
+        assert status.alive is False
+        assert status.stopped is True
+        assert status.restarts == 0
+
+        assert sup.start_unit("tick")
+        status = sup.list_units()[0]
+        assert status.alive is True
+        assert status.stopped is False
+    finally:
+        sup.shutdown()
