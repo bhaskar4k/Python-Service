@@ -222,6 +222,45 @@ Restart. Nothing else changes.
 - **Cross-platform.** `mp.set_start_method("spawn", force=True)` lives
   inside the `__main__` guard so Windows and Linux behave identically.
 
+## Build a compiled package
+
+```powershell
+python build.py
+```
+
+This creates `dist\data-processing-<version>-py<XY>\` and a matching `.zip`
+(for example `data-processing-0.1.0-py314.zip`). Inside:
+
+- `main.pyc` plus `api\`, `core\`, `units\`, `shared\` as compiled `.pyc` files, with no `.py` source
+- `config\`, `deploy\` and `requirements.txt`, copied as-is
+- `BUILD_INFO.json` with the name, version and the Python version it was built with
+
+On the target machine, run it like the source version, with `main.pyc` in place of `main.py`:
+
+```powershell
+python -m venv venv
+.\venv\Scripts\pip install -r requirements.txt
+.\venv\Scripts\python main.pyc
+```
+
+Or install it as a service with the scripts in `deploy\`. They detect the
+package and use `main.pyc`.
+
+Things to know:
+
+- **Same Python version needed.** `.pyc` files only load on the Python
+  minor version that built them (`3.14` here). Any other version fails with
+  "bad magic number". The installers read `BUILD_INFO.json` and stop with a
+  clear message instead.
+- **It hides the source, it doesn't protect it.** Decompilers can recover
+  much of the code from bytecode, so never put secrets in the code.
+- **Docstrings and `assert` statements are stripped** (`optimize=2`).
+- **Tracebacks still show file names and line numbers,** but not the source lines.
+- **One package for Windows and Linux.** Bytecode depends on the Python
+  version, not the OS. Dependencies are installed on the target from
+  `requirements.txt`.
+- Bump `version` in `pyproject.toml` before building a new release.
+
 ## Deploy
 
 See [deploy/README.md](deploy/README.md) for the full writeup. In short:

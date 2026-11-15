@@ -34,6 +34,24 @@ and real crash tracebacks, not copies of every log line. If you need public HTTP
 at `http://localhost:8000` using `web.config` (reverse proxy only — IIS
 must not host the workers).
 
+## Installing from a compiled package
+
+Build it with `python build.py` (see the main README), copy the zip from
+`dist\` to the target machine, and unpack it so that `main.pyc` sits directly
+in the install folder. On Windows:
+
+```powershell
+Expand-Archive .\data-processing-0.1.0-py314.zip -DestinationPath C:\Services
+Rename-Item C:\Services\data-processing-0.1.0-py314 data-processing
+```
+
+On Linux, unpack it to `/opt/data-processing` the same way. Then run the
+same installer as above.
+
+Both installers notice `BUILD_INFO.json`, run `main.pyc` instead of
+`main.py`, and stop before installing anything if the machine's Python
+version doesn't match the one the package was built with.
+
 ## Env vars honored by the service
 
 | Variable            | Default | Purpose                      |

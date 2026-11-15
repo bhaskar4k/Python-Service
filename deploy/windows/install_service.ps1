@@ -14,6 +14,16 @@ if (-not (Test-Path $AppDir)) {
     throw "AppDir '$AppDir' does not exist. Copy the project there first."
 }
 
+# A compiled package (from build.py) only loads on the Python version that built it.
+$buildInfo = Join-Path $AppDir "BUILD_INFO.json"
+if (Test-Path $buildInfo) {
+    $needed = (Get-Content $buildInfo -Raw | ConvertFrom-Json).python
+    $found = & python -c "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}')"
+    if ($found -ne $needed) {
+        throw "This package was built for Python $needed, but 'python' here is $found. Install Python $needed first."
+    }
+}
+
 $venv = Join-Path $AppDir "venv"
 if (-not (Test-Path $venv)) {
     Write-Host "Creating venv..."
@@ -25,7 +35,8 @@ if (-not (Test-Path $venv)) {
 New-Item -ItemType Directory -Force $LogDir | Out-Null
 
 $python = Join-Path $venv "Scripts\python.exe"
-$main   = Join-Path $AppDir "main.py"
+$main   = Join-Path $AppDir "main.pyc"   # compiled package
+if (-not (Test-Path $main)) { $main = Join-Path $AppDir "main.py" }   # source checkout
 
 # Remove any previous install, then install fresh.
 try { & $Nssm stop     $ServiceName | Out-Null } catch {}
